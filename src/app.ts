@@ -8,6 +8,7 @@ import profileRoutes from './routes/profileRoutes';
 import employerRoutes from './routes/employerRoutes';
 import metaRoutes from './routes/metaRoutes';
 import { errorHandler } from './middleware/error';
+import { pool } from './config/db';
 
 const app: Application = express();
 
@@ -16,14 +17,27 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Health Check
-app.get('/api/v1/health', (_req: Request, res: Response) => {
-  res.json({
-    status: 'ok',
-    service: 'RonoJobs API',
-    version: '1.0.0',
-    timestamp: new Date().toISOString(),
-  });
+// Health Check probe
+app.get('/api/v1/health', async (_req: Request, res: Response) => {
+  try {
+    await pool.query('SELECT 1');
+    res.status(200).json({
+      status: 'healthy',
+      database: 'connected',
+      service: 'RonoJobs API',
+      version: '1.0.0',
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error: any) {
+    res.status(503).json({
+      status: 'unhealthy',
+      database: 'disconnected',
+      error: error.message || 'Database unavailable',
+      service: 'RonoJobs API',
+      version: '1.0.0',
+      timestamp: new Date().toISOString(),
+    });
+  }
 });
 
 // Root welcome
