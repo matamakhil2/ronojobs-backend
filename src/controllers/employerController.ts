@@ -58,6 +58,12 @@ export const getJobApplicants = async (req: Request, res: Response): Promise<voi
     const { id: jobId } = req.params;
     const employerId = req.user.userId;
 
+    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!UUID_REGEX.test(jobId)) {
+      res.status(404).json({ success: false, message: 'Job not found.' });
+      return;
+    }
+
     // Verify ownership
     const jobCheck = await query('SELECT id, title, employer_id FROM jobs WHERE id = $1', [jobId]);
     if (jobCheck.rows.length === 0) {
@@ -72,6 +78,7 @@ export const getJobApplicants = async (req: Request, res: Response): Promise<voi
 
     const sql = `
       SELECT 
+        a.id,
         a.id AS application_id,
         a.job_id,
         a.candidate_id,
@@ -79,14 +86,17 @@ export const getJobApplicants = async (req: Request, res: Response): Promise<voi
         a.cover_note,
         a.resume_url,
         a.created_at AS applied_at,
+        a.created_at AS applied_date,
         a.updated_at AS status_updated_at,
         u.email AS candidate_email,
         cp.full_name,
+        cp.full_name AS candidate_name,
         cp.phone,
         cp.location,
         cp.headline,
         cp.bio,
         cp.experience_years,
+        cp.experience_years AS candidate_experience,
         cp.education,
         cp.skills AS candidate_skills
       FROM applications a

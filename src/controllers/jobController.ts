@@ -143,6 +143,12 @@ export const getJobById = async (req: Request, res: Response): Promise<void> => 
     const { id } = req.params;
     const currentUserId = req.user?.userId;
 
+    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!UUID_REGEX.test(id)) {
+      res.status(404).json({ success: false, message: 'Job not found.' });
+      return;
+    }
+
     let savedSelect = 'FALSE AS is_saved';
     let appliedSelect = 'FALSE AS has_applied';
     let applicationStatus = 'NULL AS application_status';
