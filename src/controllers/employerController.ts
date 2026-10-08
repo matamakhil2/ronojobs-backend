@@ -98,8 +98,14 @@ export const getJobApplicants = async (req: Request, res: Response): Promise<voi
         cp.experience_years,
         cp.experience_years AS candidate_experience,
         cp.education,
-        cp.skills AS candidate_skills
+        cp.skills AS candidate_skills,
+        j.title AS job_title,
+        j.location AS job_location,
+        j.employment_type,
+        c.name AS company_name
       FROM applications a
+      JOIN jobs j ON a.job_id = j.id
+      LEFT JOIN companies c ON j.company_id = c.id
       JOIN users u ON a.candidate_id = u.id
       LEFT JOIN candidate_profiles cp ON a.candidate_id = cp.user_id
       WHERE a.job_id = $1
