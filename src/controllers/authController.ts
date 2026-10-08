@@ -37,18 +37,24 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     const newUser = userRes.rows[0];
 
     // Create profile according to role
+    // Create profile according to role
+    let profileData: any = null;
     if (role === 'candidate') {
-      await query(
+      const pRes = await query(
         `INSERT INTO candidate_profiles (user_id, full_name)
-         VALUES ($1, $2)`,
+         VALUES ($1, $2)
+         RETURNING *`,
         [newUser.id, fullName || 'Candidate']
       );
+      profileData = pRes.rows[0] || null;
     } else if (role === 'employer') {
-      await query(
+      const cRes = await query(
         `INSERT INTO companies (user_id, name)
-         VALUES ($1, $2)`,
+         VALUES ($1, $2)
+         RETURNING *`,
         [newUser.id, companyName || 'My Company']
       );
+      profileData = cRes.rows[0] || null;
     }
 
     const token = signToken({
@@ -65,6 +71,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         id: newUser.id,
         email: newUser.email,
         role: newUser.role,
+        profile: profileData,
         fullName: role === 'candidate' ? (fullName || 'Candidate') : undefined,
         companyName: role === 'employer' ? (companyName || 'My Company') : undefined,
       },
