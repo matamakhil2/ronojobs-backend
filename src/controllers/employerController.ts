@@ -28,11 +28,14 @@ export const getEmployerJobs = async (req: Request, res: Response): Promise<void
         COUNT(a.id) AS applicants_count,
         COUNT(CASE WHEN a.status = 'Shortlisted' THEN 1 END) AS shortlisted_count,
         COUNT(CASE WHEN a.status = 'Interview' THEN 1 END) AS interview_count,
-        COUNT(CASE WHEN a.status = 'Selected' THEN 1 END) AS selected_count
+        COUNT(CASE WHEN a.status = 'Selected' THEN 1 END) AS selected_count,
+        c.name AS company_name,
+        c.logo_url AS company_logo
       FROM jobs j
+      LEFT JOIN companies c ON j.company_id = c.id
       LEFT JOIN applications a ON j.id = a.job_id
       WHERE j.employer_id = $1
-      GROUP BY j.id
+      GROUP BY j.id, c.id
       ORDER BY j.created_at DESC
     `;
 
@@ -102,7 +105,8 @@ export const getJobApplicants = async (req: Request, res: Response): Promise<voi
         j.title AS job_title,
         j.location AS job_location,
         j.employment_type,
-        c.name AS company_name
+        c.name AS company_name,
+        c.logo_url AS company_logo
       FROM applications a
       JOIN jobs j ON a.job_id = j.id
       LEFT JOIN companies c ON j.company_id = c.id
