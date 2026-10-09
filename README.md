@@ -30,17 +30,24 @@ cp .env.example .env
 ```
 Update your database credentials and secret key in `.env`.
 
-### 4. Running Automated QA Tests
+### 4. Database Setup & Seeding
+To run migrations and populate sample test jobs/categories:
+```bash
+npm run db:setup
+```
+
+### 5. Running Automated QA Tests
 ```bash
 npm test
 ```
 *Executes all 14 automated QA test cases verifying system health, authentication security, role guarding, search/filter APIs, and the full employer job lifecycle.*
 
-### 5. Running the Development Server
+### 6. Running the Development Server (for Postman / Manual Testing)
 ```bash
 npm run dev
 ```
 The server will start on `http://localhost:5000`.
+All API routes are mounted at `/api/v1`.
 
 ---
 
